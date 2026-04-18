@@ -73,3 +73,12 @@ La persistencia se gestiona mediante volumenes de Docker, lo que garantiza que l
 ```bash
 docker-compose down -v
 ```
+
+**Mecanismo de Almacenamiento:** Se ha definido un volumen nombrado para el servicio de base de datos:
+**Nombre del volumen:** postgres_data
+**Punto de montaje:** ```/var/lib/postgresql/data dentro del contenedor poi_db. ```
+
+Este mecanismo asegura que:
+- Los registros geoespaciales persistan tras reiniciar los contenedores con docker-compose down y docker-compose up.
+- El rendimiento de lectura/escritura sea optimo al delegar la gestion del sistema de archivos al motor de Docker.
+- Se mantenga una separacion clara entre el ciclo de vida del software (contenedores) y los datos (volumenes).
