@@ -65,4 +65,11 @@ Debido al uso de certificados autofirmados, el navegador presentara una adverten
 - **GET /:** Verificacion de estado del sistema.
 - **GET /mostrar:** Recupera el listado de todos los puntos de interes almacenados en formato JSON.
 - **POST /agregar:** Registra un nuevo punto geoespacial proporcionando Nombre, Descripcion, Categoria, Latitud y Longitud.
-- **Documentacion Interactiva:** ``` https://localhost/docs```  (Interfaz Swagger UI para pruebas de endpoints).
+- **Documentacion Interactiva:** ```https://localhost/docs```  (Interfaz Swagger UI para pruebas de endpoints).
+
+
+#### Persistencia de Datos
+La persistencia se gestiona mediante volumenes de Docker, lo que garantiza que la informacion geoespacial almacenada en PostGIS no se pierda al detener los contenedores. Para realizar una limpieza completa, incluyendo la eliminacion de los volumenes de datos, utilice el comando:
+```bash
+docker-compose down -v
+```
