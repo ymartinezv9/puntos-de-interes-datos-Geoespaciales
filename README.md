@@ -4,8 +4,24 @@ Este proyecto implementa una arquitectura de microservicios contenerizada para l
 
 ## Estructura del Proyecto
 
-La disposicion de archivos en el entorno de desarrollo es la siguiente:
-
+```text
+.
+├── backend/  
+│   ├── app/
+│   │   └── main.py
+│   ├── Dockerfile
+│   └── requirements.txt
+├── db/
+│   └── init.sql
+├── nginx/
+│   ├── nginx.conf
+│   ├── selfsigned.crt
+│   └── selfsigned.key
+├── .env.example
+├── .gitignore
+└── docker-compose.yml
+```
+### Descripcion de componentes:
 - **backend/**: Contiene la logica de la API.
   - `Dockerfile`: Definicion de la imagen del servidor de aplicaciones.
   - `main.py`: Script principal de la API REST con FastAPI.
@@ -14,11 +30,11 @@ La disposicion de archivos en el entorno de desarrollo es la siguiente:
   - `init.sql`: Script de inicializacion de tablas, extension PostGIS y datos de ejemplo.
 - **nginx/**: Configuracion del proxy web.
   - `nginx.conf`: Archivo de configuracion del servidor Nginx.
-  - `selfsigned.crt`: Certificado SSL autofirmado generado para el dominio localhost.
+  - `selfsigned.crt`: Certificado SSL autofirmado generado para localhost.
   - `selfsigned.key`: Llave privada asociada al certificado SSL.
-- **.env**: Archivo de variables de entorno con credenciales reales (No incluido en control de versiones).
 - **.env.example**: Plantilla de configuracion para el despliegue inicial.
 - **docker-compose.yml**: Orquestador encargado de la construccion y despliegue de los servicios.
+- **.gitignore**: Archivo para excluir datos sensibles del control de versiones.
 
 ## Requisitos de Contenerizacion y Red
 
@@ -26,18 +42,27 @@ El sistema se fundamenta en los siguientes pilares tecnicos:
 
 1. **Contenerizacion Completa**: Cada componente (Base de datos, Servidor de aplicaciones y Proxy) se ejecuta en un contenedor independiente basado en imagenes oficiales.
 2. **Red Definida por el Usuario**: Los servicios se comunican a traves de una red de tipo bridge personalizada denominada `geo_network`, permitiendo el aislamiento de los contenedores de la red externa.
-3. **Proxy Reverso**: Nginx gestiona el trafico entrante, realizando una redireccion forzosa del puerto 80 (HTTP) al puerto 443 (HTTPS).
+3. **Proxy Reverso**: Nginx gestiona el trafico entrante, realizando una redireccion forzosa del puerto 80 (HTTP) al puerto 443 (HTTPS) para garantizar conexiones cifradas.
 
 ## Instrucciones de Construccion y Despliegue
 
 ### 1. Configuracion de Entorno
-Cree un archivo denominado `.env` en la raiz del proyecto tomando como base el archivo `.env.example`. Asegurese de que los valores de `POSTGRES_USER`, `POSTGRES_PASSWORD` y `DATABASE_URL` sean consistentes entre si.
+Cree un archivo denominado `.env` en la raiz del proyecto tomando como base el archivo `.env.example`. Los valores de `POSTGRES_USER`, `POSTGRES_PASSWORD` y `DATABASE_URL` deben ser consistentes para permitir la conexion.
 
-### 2. Generacion de Certificados SSL
-Si los archivos de certificado no estan presentes, pueden generarse mediante el siguiente comando (requiere OpenSSL):
+### 2. Ejecucion del Sistema
+Para construir las imagenes e iniciar los servicios en segundo plano, ejecute el siguiente comando en la terminal:
 ```bash
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout nginx/selfsigned.key -out nginx/selfsigned.crt -subj "/CN=localhost"
+docker-compose up --build -d 
 ```
+### Uso de la API y Endpoints
 
-### 3. Ejecucion del Sistema
-Para construir las imagenes e iniciar los servicios en segundo plano, ejecute: ```docker-compose up --build -d  ```
+El sistema estara accesible a traves de la direccion: ```https://localhost/```
+
+Debido al uso de certificados autofirmados, el navegador presentara una advertencia de seguridad. Es necesario seleccionar la opcion de proceder al sitio de forma manual.
+
+#### Endpoints Disponibles:
+
+- **GET /:** Verificacion de estado del sistema.
+- **GET /mostrar:** Recupera el listado de todos los puntos de interes almacenados en formato JSON.
+- **POST /agregar:** Registra un nuevo punto geoespacial proporcionando Nombre, Descripcion, Categoria, Latitud y Longitud.
+- **Documentacion Interactiva:** ``` https://localhost/docs```  (Interfaz Swagger UI para pruebas de endpoints).
