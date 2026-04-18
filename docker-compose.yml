@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: poi_db
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - geo_network
+
+  backend:
+    build: ./backend
+    container_name: poi_backend
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      - db
+    networks:
+      - geo_network
+
+  proxy:
+      image: nginx:alpine
+      container_name: poi_proxy
+      ports:
+        - "80:80"   # HTTP (redirige)
+        - "443:443" # HTTPS (seguro)
+      volumes:
+        - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+        - ./nginx/selfsigned.crt:/etc/nginx/certs/selfsigned.crt:ro
+        - ./nginx/selfsigned.key:/etc/nginx/certs/selfsigned.key:ro
+      depends_on:
+        - backend
+      networks:
+        - geo_network
+
+networks:
+  geo_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
